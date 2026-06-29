@@ -1,0 +1,82 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-foodorder}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-foodorder}
+      POSTGRES_DB: ${POSTGRES_DB:-foodorder}
+    ports:
+      - '${DB_PORT:-6436}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-foodorder}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      API_PORT: '4000'
+      DATABASE_URL: postgresql://${POSTGRES_USER:-foodorder}:${POSTGRES_PASSWORD:-foodorder}@db:5432/${POSTGRES_DB:-foodorder}?schema=public
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-change-me-access-secret-min-32-chars-long}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-me-refresh-secret-min-32-chars-long}
+      CORS_ORIGINS: ${PUBLIC_URL:-http://localhost}
+      CUSTOMER_URL: ${PUBLIC_URL:-http://localhost}
+      ADMIN_URL: ${PUBLIC_URL:-http://localhost}/admin
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_CURRENCY: ${STRIPE_CURRENCY:-sgd}
+    expose:
+      - '4000'
+    ports:
+      - '${API_PORT:-4000}:4000'
+
+  customer-web:
+    build:
+      context: .
+      dockerfile: customer-web/Dockerfile
+      args:
+        # Empty -> browser uses same origin (nginx proxies /api + /socket.io).
+        VITE_API_URL: ''
+        VITE_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+        VITE_DEFAULT_RESTAURANT_ID: ${DEFAULT_RESTAURANT_ID:-}
+    restart: unless-stopped
+    expose:
+      - '80'
+
+  admin-web:
+    build:
+      context: .
+      dockerfile: admin-web/Dockerfile
+      args:
+        VITE_API_URL: ''
+        VITE_BASE: /admin/
+    restart: unless-stopped
+    expose:
+      - '80'
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+      - api
+      - customer-web
+      - admin-web
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - '${HTTP_PORT:-80}:80'
+
+volumes:
+  postgres_data:

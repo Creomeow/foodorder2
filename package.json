@@ -1,0 +1,27 @@
+{
+  "name": "foodorder",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Food Ordering System — SaaS restaurant ordering platform (API + Customer Web + Admin/KDS)",
+  "workspaces": [
+    "shared",
+    "api",
+    "customer-web",
+    "admin-web"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev --workspace api",
+    "dev:customer": "npm run dev --workspace customer-web",
+    "dev:admin": "npm run dev --workspace admin-web",
+    "db:push": "npm run db:push --workspace api",
+    "db:migrate": "npm run db:migrate --workspace api",
+    "db:seed": "npm run db:seed --workspace api",
+    "db:studio": "npm run db:studio --workspace api",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
