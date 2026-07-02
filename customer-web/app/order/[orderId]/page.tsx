@@ -3,9 +3,7 @@
 import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ORDER_STATUS_FLOW, OrderStatus, type Order as BaseOrder } from '@foodorder/shared';
-
-type Order = BaseOrder & { scheduledFor?: string | null; tableNumber?: string | null };
+import { ORDER_STATUS_FLOW, OrderStatus, type Order } from '@foodorder/shared';
 import { api } from '../../../lib/api';
 import { trackOrder } from '../../../lib/socket';
 import { Spinner, Button } from '../../../components/ui';
@@ -44,6 +42,9 @@ export default function OrderTracking() {
 
   const cancelled = order.status === OrderStatus.CANCELLED;
   const currentIdx = ORDER_STATUS_FLOW.indexOf(order.status);
+  // scheduledFor is present in the API response but may not yet be in the
+  // generated shared type on some build environments.
+  const scheduledFor = (order as Record<string, unknown>).scheduledFor as string | null | undefined;
 
   return (
     <div className="flex min-h-screen flex-col px-4 py-6">
@@ -53,9 +54,9 @@ export default function OrderTracking() {
         <p className="mt-1 text-sm text-gray-500">
           {order.orderType === 'DINE_IN' ? `Table ${order.tableNumber ?? ''}` : 'Takeaway'}
         </p>
-        {order.scheduledFor && (
+        {scheduledFor && (
           <p className="mt-1 text-xs text-gray-400">
-            Scheduled for {new Date(order.scheduledFor).toLocaleString('en-SG', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}
+            Scheduled for {new Date(scheduledFor).toLocaleString('en-SG', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}
           </p>
         )}
       </div>
