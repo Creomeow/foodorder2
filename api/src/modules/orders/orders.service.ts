@@ -129,6 +129,7 @@ export async function createOrder(input: OrderCreateInput) {
         discount,
         total,
         couponId,
+        scheduledFor: input.scheduledFor ? new Date(input.scheduledFor) : null,
         items: {
           create: itemsData.map((it) => ({
             menuItemId: it.menuItemId,

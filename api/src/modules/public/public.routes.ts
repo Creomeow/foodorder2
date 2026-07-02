@@ -49,6 +49,29 @@ publicRouter.get(
   }),
 );
 
+// Active promotions for an outlet (used by the customer app's welcome screen).
+publicRouter.get(
+  '/outlet/:restaurantId/promotions',
+  asyncHandler(async (req, res) => {
+    const restaurantId = req.params.restaurantId;
+    const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } });
+    if (!restaurant) throw notFound('Outlet not found');
+
+    const now = new Date();
+    const promotions = await prisma.promotion.findMany({
+      where: {
+        restaurantId,
+        active: true,
+        OR: [{ validFrom: null }, { validFrom: { lte: now } }],
+        AND: [{ OR: [{ validTo: null }, { validTo: { gte: now } }] }],
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    ok(res, promotions);
+  }),
+);
+
 // Resolve a QR token -> table + outlet, opening a dine-in session.
 publicRouter.post(
   '/sessions',

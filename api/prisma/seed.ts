@@ -192,7 +192,7 @@ async function main() {
       items: [
         { name: 'Teh Tarik', desc: 'Pulled milk tea', price: 2.5, img: 'photo-1571934811356-5cc061b6821f', mods: ['Size'] },
         { name: 'Kopi', desc: 'Local coffee', price: 2.0, img: 'photo-1509042239860-f550ce710b93', mods: ['Size'] },
-        { name: 'Bandung', desc: 'Rose syrup milk', price: 3.0, img: 'photo-1497534446932-c925b458314a', mods: ['Size'] },
+        { name: 'Bandung', desc: 'Rose syrup milk', price: 3.0, img: 'photo-1551538827-9c037cb4f32a', mods: ['Size'] },
       ],
     },
     {
@@ -264,6 +264,28 @@ async function main() {
     data: [
       { brandId: brand.id, code: 'WELCOME10', type: 'PERCENT', value: new Prisma.Decimal(10), minSpend: new Prisma.Decimal(15), active: true },
       { restaurantId: main.id, code: 'SAVE5', type: 'FIXED', value: new Prisma.Decimal(5), minSpend: new Prisma.Decimal(30), active: true },
+    ],
+  });
+
+  // ---- Promotions (shown on the customer app's welcome screen) ----
+  await prisma.promotion.createMany({
+    data: [
+      {
+        restaurantId: main.id,
+        name: '1 FOR 1 Soups',
+        description: 'Monday–Thursday, 11am–5pm. Dine-in only, applies to all soups.',
+        bannerImageUrl: IMG('photo-1547592180-85f173990554'),
+        ctaText: '1 FOR 1 — Dine-in only, all soups',
+        active: true,
+      },
+      {
+        restaurantId: main.id,
+        name: 'Welcome 10% Off',
+        description: 'First-time customers get 10% off with code WELCOME10.',
+        bannerImageUrl: IMG('photo-1565299624946-b28f40a0ae38'),
+        ctaText: 'Use code WELCOME10',
+        active: true,
+      },
     ],
   });
 
