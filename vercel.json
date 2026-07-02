@@ -1,5 +1,5 @@
 {
-  "framework": "nextjs",
+  "framework": null,
   "installCommand": "npm install",
   "buildCommand": "npm run build --workspace customer-web",
   "outputDirectory": "customer-web/out",
