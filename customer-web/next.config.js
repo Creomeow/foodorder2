@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  // 'standalone' is needed for Docker but breaks Vercel's build output API.
+  ...(process.env.NEXT_STANDALONE === 'true' && { output: 'standalone' }),
   reactStrictMode: true,
   webpack: (config) => {
     // @foodorder/shared's TS source uses NodeNext-style `.js` specifiers for
