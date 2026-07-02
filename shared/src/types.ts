@@ -167,9 +167,21 @@ export interface Order {
   serviceCharge: number;
   discount: number;
   total: number;
+  scheduledFor: string | null;
   items: OrderItem[];
   payment?: Payment | null;
   createdAt: string;
+}
+
+export interface Promotion {
+  id: string;
+  restaurantId: string;
+  name: string;
+  description: string | null;
+  bannerImageUrl: string | null;
+  ctaText: string | null;
+  validFrom: string | null;
+  validTo: string | null;
 }
 
 export interface Coupon {

@@ -167,6 +167,7 @@ export const orderCreateSchema = z.object({
   customerPhone: z.string().optional().nullable(),
   items: z.array(orderItemInput).min(1),
   couponCode: z.string().optional().nullable(),
+  scheduledFor: z.string().datetime().optional().nullable(),
 });
 export type OrderCreateInput = z.infer<typeof orderCreateSchema>;
 
