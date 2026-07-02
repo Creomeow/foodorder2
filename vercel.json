@@ -1,7 +1,7 @@
 {
   "framework": null,
   "installCommand": "npm install",
-  "buildCommand": "npm run build --workspace customer-web",
+  "buildCommand": "npm run build --workspace customer-web && rm -rf customer-web/.next",
   "outputDirectory": "customer-web/out",
   "rewrites": [
     { "source": "/order/:orderId", "destination": "/order/_" },
