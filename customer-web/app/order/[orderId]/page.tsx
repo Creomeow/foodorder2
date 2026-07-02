@@ -3,7 +3,9 @@
 import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ORDER_STATUS_FLOW, OrderStatus, type Order } from '@foodorder/shared';
+import { ORDER_STATUS_FLOW, OrderStatus, type Order as BaseOrder } from '@foodorder/shared';
+
+type Order = BaseOrder & { scheduledFor?: string | null; tableNumber?: string | null };
 import { api } from '../../../lib/api';
 import { trackOrder } from '../../../lib/socket';
 import { Spinner, Button } from '../../../components/ui';
