@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/order/:orderId", "destination": "/order/_" },
+    { "source": "/pay/:orderId",   "destination": "/pay/_"   },
+    { "source": "/table/:qrToken", "destination": "/table/_" }
+  ]
+}
