@@ -1,11 +1,4 @@
 {
-  "framework": null,
   "installCommand": "npm install",
-  "buildCommand": "npm run build --workspace customer-web && rm -rf customer-web/.next",
-  "outputDirectory": "customer-web/out",
-  "rewrites": [
-    { "source": "/order/:orderId", "destination": "/order/_" },
-    { "source": "/pay/:orderId",   "destination": "/pay/_"   },
-    { "source": "/table/:qrToken", "destination": "/table/_" }
-  ]
+  "buildCommand": "bash scripts/vercel-build.sh"
 }
