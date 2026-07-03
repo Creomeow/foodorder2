@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from 'react';
+import { forwardRef, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from 'react';
 import { OrderStatus } from '@foodorder/shared';
 
 export function Spinner({ label }: { label?: string }) {
@@ -35,14 +35,16 @@ export function Button({
   );
 }
 
-export function Input({ className = '', ...props }: InputHTMLAttributes<HTMLInputElement>) {
-  return (
+export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
+  ({ className = '', ...props }, ref) => (
     <input
+      ref={ref}
       className={`w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand ${className}`}
       {...props}
     />
-  );
-}
+  ),
+);
+Input.displayName = 'Input';
 
 export function Select({
   className = '',
