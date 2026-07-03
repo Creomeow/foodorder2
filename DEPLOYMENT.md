@@ -35,12 +35,16 @@ npm run dev:customer          # http://localhost:5173
 npm run dev:admin             # http://localhost:5174
 ```
 
-Set each frontend's API URL via `customer-web/.env` and `admin-web/.env`:
+Set each frontend's API URL via `customer-web/.env` (Next.js) and `admin-web/.env` (Vite):
 
 ```
+# customer-web/.env
+NEXT_PUBLIC_API_URL=http://localhost:4000
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxx
+NEXT_PUBLIC_DEFAULT_RESTAURANT_ID=<seeded outlet id> # enables /takeaway without a QR
+
+# admin-web/.env
 VITE_API_URL=http://localhost:4000
-VITE_STRIPE_PUBLISHABLE_KEY=pk_test_xxx      # customer only
-VITE_DEFAULT_RESTAURANT_ID=<seeded outlet id> # enables /takeaway without a QR
 ```
 
 **Demo logins** (from the seed):
@@ -54,7 +58,7 @@ VITE_DEFAULT_RESTAURANT_ID=<seeded outlet id> # enables /takeaway without a QR
 ## 3. Stripe (real payments)
 
 1. Get test keys from https://dashboard.stripe.com/test/apikeys and set
-   `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY` (and `VITE_STRIPE_PUBLISHABLE_KEY`).
+   `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY` (and `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`).
 2. Forward webhooks locally and copy the signing secret into `STRIPE_WEBHOOK_SECRET`:
    ```bash
    stripe listen --forward-to localhost:4000/api/v1/payments/webhook

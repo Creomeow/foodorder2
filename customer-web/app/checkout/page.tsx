@@ -49,8 +49,8 @@ export default function Checkout() {
   }, [subtotal, discount, restaurant]);
 
   useEffect(() => {
-    if (lines.length === 0) router.replace('/menu');
-  }, [lines.length, router]);
+    if (lines.length === 0 && !placing) router.replace('/menu');
+  }, [lines.length, placing, router]);
 
   async function checkCoupon() {
     setCouponMsg(null);

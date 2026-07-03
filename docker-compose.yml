@@ -30,7 +30,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-foodorder}:${POSTGRES_PASSWORD:-foodorder}@db:5432/${POSTGRES_DB:-foodorder}?schema=public
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-change-me-access-secret-min-32-chars-long}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-me-refresh-secret-min-32-chars-long}
-      CORS_ORIGINS: ${PUBLIC_URL:-http://localhost}
+      CORS_ORIGINS: ${PUBLIC_URL:-http://localhost},http://localhost:5173,http://localhost:5174
       CUSTOMER_URL: ${PUBLIC_URL:-http://localhost}
       ADMIN_URL: ${PUBLIC_URL:-http://localhost}/admin
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
@@ -48,12 +48,12 @@ services:
       dockerfile: customer-web/Dockerfile
       args:
         # Empty -> browser uses same origin (nginx proxies /api + /socket.io).
-        VITE_API_URL: ''
-        VITE_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
-        VITE_DEFAULT_RESTAURANT_ID: ${DEFAULT_RESTAURANT_ID:-}
+        NEXT_PUBLIC_API_URL: ''
+        NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+        NEXT_PUBLIC_DEFAULT_RESTAURANT_ID: ${DEFAULT_RESTAURANT_ID:-}
     restart: unless-stopped
     expose:
-      - '80'
+      - '5173'
 
   admin-web:
     build:

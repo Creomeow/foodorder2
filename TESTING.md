@@ -82,15 +82,33 @@ npm run dev --workspace admin-web
 
 ## Test: Dine-In Flow
 
-Open `http://localhost:5173/table/<qrToken>` in a **mobile viewport** (Chrome DevTools → device toolbar).
+### Getting the table QR URLs
 
-Seeded QR tokens for Tertiary Eats — Orchard:
+QR tokens are generated fresh on every `db:seed` run, so you need to fetch them from the database each time:
 
-| Table | URL |
-| ----- | --- |
-| 1 | http://localhost:5173/table/cmr0bkh2d002i7a3cv9g1wfik |
-| 2 | http://localhost:5173/table/cmr0bkh2e002m7a3cn1d9yxwc |
-| 3 | http://localhost:5173/table/cmr0bkh2f002q7a3cw1sxrod7 |
+```bash
+# Option A — psql (if you have it installed)
+psql "$DATABASE_URL" -c 'SELECT "tableNumber", "qrToken" FROM "Table" ORDER BY "tableNumber";'
+
+# Option B — Prisma Studio (GUI browser)
+npm run db:studio --workspace api
+# Then open http://localhost:5555 → select the Table model
+
+# Option C — one-liner with tsx
+node -e "
+const { PrismaClient } = require('./api/node_modules/@prisma/client');
+const p = new PrismaClient();
+p.table.findMany({ select: { tableNumber: true, qrToken: true }, orderBy: { tableNumber: 'asc' } })
+  .then(rows => { rows.forEach(r => console.log(\`Table \${r.tableNumber}: http://localhost:5173/table/\${r.qrToken}\`)); p.\$disconnect(); });
+"
+```
+
+Each token produces a URL like:
+```
+http://localhost:5173/table/<qrToken>
+```
+
+Open that URL in a **mobile viewport** (Chrome DevTools → device toolbar, e.g. iPhone 14 Pro).
 
 **Steps:**
 1. Open a table URL → auto-redirects to `/welcome`
@@ -107,7 +125,32 @@ Seeded QR tokens for Tertiary Eats — Orchard:
 
 ## Test: Takeaway Flow
 
-1. Open `http://localhost:5173/` → tap **Order Takeaway**
+### Getting the outlet URL
+
+The takeaway flow requires a restaurant/outlet ID. Get it from the seed output, or query the DB:
+
+```bash
+# Option A — from seed output (printed as "Seeded outlet: <id>" when you ran db:seed)
+
+# Option B — psql
+psql "$DATABASE_URL" -c 'SELECT id, name FROM "Restaurant";'
+
+# Option C — one-liner with tsx
+node -e "
+const { PrismaClient } = require('./api/node_modules/@prisma/client');
+const p = new PrismaClient();
+p.restaurant.findMany({ select: { id: true, name: true } })
+  .then(rows => { rows.forEach(r => console.log(\`\${r.name}: http://localhost:5173/takeaway?r=\${r.id}\`)); p.\$disconnect(); });
+"
+```
+
+You can also open `http://localhost:5173/` and tap **Order Takeaway** from the landing page (it uses `NEXT_PUBLIC_DEFAULT_RESTAURANT_ID` set in `customer-web/.env.local`), or go directly to:
+
+```
+http://localhost:5173/takeaway?r=<restaurantId>
+```
+
+1. Open the takeaway URL → enter name and phone → **Browse menu** → Welcome screen shows "Takeaway order"
 2. Enter name and phone → **Browse menu** → Welcome screen shows "Takeaway order"
 3. Tap **Confirm** → `/menu`
 4. Tap the **service-mode pill** → ServiceModeModal opens:
@@ -153,11 +196,30 @@ Seeded QR tokens for Tertiary Eats — Orchard:
 
 ## Teardown
 
-```bash
-# Stop all containers (keeps DB data)
-docker compose down
+### Temporary (resume tomorrow)
 
-# Stop all containers AND delete DB data (full reset)
+Stop dev servers with `Ctrl+C` in each terminal tab, then stop the containers without deleting data:
+
+```bash
+docker compose down
+```
+
+To resume the next day:
+
+```bash
+docker compose up -d db
+# then restart your dev servers in three tabs:
+npm run dev:api
+npm run dev --workspace customer-web
+npm run dev --workspace admin-web
+```
+
+Your DB data, seeded menu, and table QR tokens are all preserved — no need to re-seed.
+
+### Full reset (wipe everything)
+
+```bash
+# Stop all containers AND delete DB data
 docker compose down -v
 
 # Kill dev servers
@@ -242,10 +304,15 @@ Note the seeded outlet ID printed by `db:seed`.
 
 ## 5. Deploy customer-web to Vercel
 
+> **Important — Hobby plan static export**: `customer-web` builds as a static site (`output: 'export'`) on Vercel, which produces 0 serverless functions and stays under the Hobby plan's 12-function limit. This is automatic — `VERCEL=1` is set by Vercel on every build and triggers the export mode in `next.config.js`. Do **not** change the output mode.
+
 1. Go to vercel.com → **New Project → Import Git Repository**
 2. Set **Root Directory** to `customer-web`
-3. Framework preset: **Next.js**
-4. Add environment variables:
+3. Framework preset: **Next.js** (auto-detected)
+4. Set **Install Command** to: `cd .. && npm install`
+   - This installs from the monorepo root so `@foodorder/shared` workspace symlinks resolve correctly
+5. Leave Build Command and Output Directory as defaults (`next build` / `out`)
+6. Add environment variables:
 
 | Variable                            | Value                        |
 | ----------------------------------- | ---------------------------- |
@@ -253,7 +320,8 @@ Note the seeded outlet ID printed by `db:seed`.
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`| From Stripe dashboard        |
 | `NEXT_PUBLIC_DEFAULT_RESTAURANT_ID` | Outlet ID from db:seed       |
 
-5. Deploy — Vercel builds `next build` automatically
+7. Deploy
+8. After deploying, go to **Project Settings → Deployment Protection** and set **Vercel Authentication** to **Disabled** (otherwise the site redirects all visitors to the Vercel login page)
 
 ## 6. Deploy admin-web to Vercel
 
@@ -280,14 +348,56 @@ Redeploy the API after updating this variable.
 
 ## 8. Test the Vercel deployment
 
-- Customer app: `https://your-customer-web.vercel.app/table/<qrToken>`
-- Admin: `https://your-admin-web.vercel.app/`
-- API docs: `https://your-api-url/api/docs`
+### Getting QR tokens from the production database
 
-Use the same test flows as the local testing section above.
+Since the production DB is on Neon, fetch tokens by running locally with the Neon connection string:
+
+```bash
+# Option A — psql
+psql "<neon connection string>" -c 'SELECT "tableNumber", "qrToken" FROM "Table" ORDER BY "tableNumber";'
+
+# Option B — one-liner (from monorepo root)
+DATABASE_URL="<neon connection string>" node -e "
+const { PrismaClient } = require('./api/node_modules/@prisma/client');
+const p = new PrismaClient();
+p.table.findMany({ select: { tableNumber: true, qrToken: true }, orderBy: { tableNumber: 'asc' } })
+  .then(rows => { rows.forEach(r => console.log(\`Table \${r.tableNumber}: https://your-customer-web.vercel.app/table/\${r.qrToken}\`)); p.\$disconnect(); });
+"
+
+# Option C — get outlet ID for takeaway URL
+DATABASE_URL="<neon connection string>" node -e "
+const { PrismaClient } = require('./api/node_modules/@prisma/client');
+const p = new PrismaClient();
+p.restaurant.findMany({ select: { id: true, name: true } })
+  .then(rows => { rows.forEach(r => console.log(\`\${r.name}: https://your-customer-web.vercel.app/takeaway?r=\${r.id}\`)); p.\$disconnect(); });
+"
+```
+
+### Test URLs
+
+- **Customer app (dine-in):** `https://your-customer-web.vercel.app/table/<qrToken>`
+- **Customer app (takeaway):** `https://your-customer-web.vercel.app/takeaway?r=<restaurantId>`
+- **Customer app (landing):** `https://your-customer-web.vercel.app/`
+- **Admin:** `https://your-admin-web.vercel.app/`
+- **API docs:** `https://your-api-url/api/docs`
+
+Use the same dine-in, takeaway, admin, and KDS flows described in the local testing sections above. The only difference is the base URL — all routes and interactions are identical.
 
 ## Teardown (Vercel + Neon)
 
+### Temporary (resume tomorrow)
+
+Nothing needs to be stopped — all three services are serverless/managed and idle for free:
+
+- **Vercel** (customer-web / admin-web): static deployments stay live at no cost; nothing to do
+- **Neon DB**: auto-suspends after 5 minutes of inactivity on the free tier; auto-wakes on the next connection
+- **Railway API**: safe to leave running — Railway only charges for active compute, so an idle service overnight costs negligible amounts on the Hobby plan
+
+To resume the next day: everything wakes automatically on the first request, no action needed.
+
+### Full teardown (delete everything)
+
 - **Vercel**: go to Project Settings → scroll to bottom → **Delete Project**
 - **Neon**: go to Project Settings → **Delete Project** (deletes the database)
+- **Railway**: go to your project → **Settings → Delete Project**
 - **Stripe webhooks**: go to Stripe dashboard → Webhooks → delete the endpoint

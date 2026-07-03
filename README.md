@@ -8,6 +8,7 @@ A production-ready, multi-tenant SaaS restaurant ordering platform — QR table 
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React_18-20232A?logo=react&logoColor=61DAFB)
+![Next.js](https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&logoColor=white)
@@ -23,7 +24,7 @@ A production-ready, multi-tenant SaaS restaurant ordering platform — QR table 
 | App                | Stack                                              | Purpose                                  |
 | ------------------ | -------------------------------------------------- | ---------------------------------------- |
 | **`api`**          | Express · TypeScript · Prisma · PostgreSQL · Socket.IO · Stripe | Shared REST + realtime backend |
-| **`customer-web`** | Vite · React · Tailwind · Zustand · TanStack Query | Mobile-first customer ordering           |
+| **`customer-web`** | Next.js · React · Tailwind · Zustand · TanStack Query | Mobile-first customer ordering        |
 | **`admin-web`**    | Vite · React · Tailwind · Recharts                 | Admin dashboard + Kitchen Display (KDS)  |
 | **`shared`**       | TypeScript · Zod                                   | Shared DTO schemas, types, enums         |
 
@@ -65,7 +66,7 @@ npm run dev:admin               # http://localhost:5174
 ```
 
 Demo logins (seeded): `superadmin@foodorder.dev / Admin123!`, `manager@…/Manager123!`, `staff@…/Staff123!`.
-The seed prints the main outlet id — put it in `customer-web/.env` as `VITE_DEFAULT_RESTAURANT_ID` to enable `/takeaway` without a QR.
+The seed prints the main outlet id — put it in `customer-web/.env` as `NEXT_PUBLIC_DEFAULT_RESTAURANT_ID` to enable `/takeaway` without a QR.
 
 ## One-command containerised deploy
 
@@ -82,7 +83,7 @@ See **[DEPLOYMENT.md](DEPLOYMENT.md)** for env vars, Stripe webhook setup, and p
 ```
 foodorder/
 ├── api/            # Express + Prisma + Socket.IO + Stripe
-├── customer-web/   # Vite/React customer ordering app
+├── customer-web/   # Next.js/React customer ordering app
 ├── admin-web/      # Vite/React admin + KDS
 ├── shared/         # Zod schemas + types + enums (consumed by all)
 ├── nginx/          # reverse proxy

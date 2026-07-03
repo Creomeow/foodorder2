@@ -14,8 +14,7 @@
     "strict": true,
     "noUnusedLocals": false,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
-    "paths": {
+     "paths": {
       "@foodorder/shared": ["../shared/src/index.ts"],
       "@/*": ["src/*"]
     }

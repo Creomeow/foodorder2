@@ -38,7 +38,8 @@ Run a single workspace script with `--workspace <name>` (e.g. `npm run db:studio
 
 - The API runs through **tsx** (no `tsc` emit) — `npm run build` only typechecks.
 - Prisma enums and `@foodorder/shared` enums must stay in sync (both are string unions with identical values; cast at the Prisma boundary when TS complains).
-- Frontends use a **relative** API URL (`VITE_API_URL=''`) in Docker so nginx serves everything same-origin; set an absolute URL for local dev.
+- Frontends use a **relative** API URL (`NEXT_PUBLIC_API_URL=''` for customer-web, `VITE_API_URL=''` for admin-web) in Docker so nginx serves everything same-origin; set an absolute URL for local dev.
+- `customer-web` is Next.js (App Router, `output: 'standalone'`); its Docker image runs `next start` via `node server.js` — no nginx inside that container, nginx only fronts it at the compose level.
 - `admin-web` builds with `base=/admin/` for the nginx sub-path; `BrowserRouter` uses `import.meta.env.BASE_URL`.
 - Env is loaded from the monorepo-root `.env` (api/`config/env.ts` + `prisma/seed.ts` resolve `../.env`); Prisma CLI scripts use `dotenv -e ../.env`.
 
