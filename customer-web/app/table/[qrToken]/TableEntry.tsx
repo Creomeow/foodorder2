@@ -7,7 +7,10 @@ import { useSession } from '../../../store/session';
 import { Spinner, Button } from '../../../components/ui';
 
 export default function TableEntry() {
-  const { qrToken } = useParams<{ qrToken: string }>();
+  const params = useParams<{ qrToken: string }>();
+  const qrToken = params.qrToken === '_' && typeof window !== 'undefined'
+    ? window.location.pathname.split('/')[2]
+    : params.qrToken;
   const router = useRouter();
   const setDineIn = useSession((s) => s.setDineIn);
   const [error, setError] = useState<string | null>(null);

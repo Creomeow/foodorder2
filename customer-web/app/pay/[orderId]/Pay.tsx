@@ -19,7 +19,10 @@ async function getStripe(): Promise<Stripe | null> {
 }
 
 function PayContent() {
-  const { orderId } = useParams<{ orderId: string }>();
+  const params = useParams<{ orderId: string }>();
+  const orderId = params.orderId === '_' && typeof window !== 'undefined'
+    ? window.location.pathname.split('/')[2]
+    : params.orderId;
   const params = useSearchParams();
   const method = params.get('method') ?? 'CARD';
   const router = useRouter();
