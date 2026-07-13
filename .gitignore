@@ -47,3 +47,7 @@ coverage/
 # Playwright MCP artifacts
 .playwright-mcp/
 .github/workflows/ci.yml
+
+# Unused self-host deploy path (production runs on Vercel + Railway)
+nginx/
+docker-compose.yml
